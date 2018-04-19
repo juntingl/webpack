@@ -22,7 +22,18 @@ It’s a funny story how I started with webpack. Before getting addicted to Java
 
 ![](/assets/框架的演进.jpg)
 
-从众多JS 库，简单的引入库进行库进行开发，到模块化概念的出现； 不断演进到 MVC 软件架构模式
+从众多JS 库，简单的引入库进行进行开发时代，到模块化概念的出现； 不断演进到 MVC 软件架构模式，在然后到 MVVM 架构模式，模块化、组件化核心出发，无疑更需要转换编译。
+
+## 
+
+## 语言的演进
+
+
+
+* ES6/7/8 的发布
+* Less、Sass、PostCss 的出现
+
+各个 浏览器对新发布的特性兼容性并不好，而且各个浏览器都有自己的前缀，Less、Sass...更是需要预编译；所以更需要构建工具来处理。
 
 
 
