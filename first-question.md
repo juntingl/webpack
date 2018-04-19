@@ -33,8 +33,6 @@ It’s a funny story how I started with webpack. Before getting addicted to Java
 
 各个 浏览器对新发布的特性兼容性并不好，而且各个浏览器都有自己的前缀，Less、Sass...更是需要预编译；所以更需要构建工具来处理。
 
-
-
 ## 环境的变化
 
 * node 出现，让js可运行在服务端
@@ -62,6 +60,14 @@ It’s a funny story how I started with webpack. Before getting addicted to Java
 大量的构建工具的出现，也说明了我们需要构建。
 
 
+
+## 为什么选择Webpack？
+
+
+
+* 三大主流框架的使用
+* Code-splitting （代码分割）
+* 模块化的支持
 
 
 
