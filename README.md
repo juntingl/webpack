@@ -4,6 +4,8 @@
 
 _依赖关系图\(dependency graph\)_，其中包含应用程序需要的每个模块，然后将所有这些模块打包成一个或多个_bundle_。
 
+A bundler for javascript and friends. Packs many modules into a few bundled assets. Code Splitting allows to load parts for the application on demand. Through "loaders," modules can be CommonJs, AMD, ES6 modules, CSS, Images, JSON, Coffeescript, LESS, ... and your custom stuff.
+
 ## 当前系统环境
 
 * _**macOS 10.13.4**_
