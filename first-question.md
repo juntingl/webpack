@@ -59,15 +59,12 @@ It’s a funny story how I started with webpack. Before getting addicted to Java
 
 大量的构建工具的出现，也说明了我们需要构建。
 
-
-
 ## 为什么选择Webpack？
-
-
 
 * 三大主流框架的使用
 * Code-splitting （代码分割）
 * 模块化的支持
+* 拥有比较全面的解决各种问题的能力
 
 
 
