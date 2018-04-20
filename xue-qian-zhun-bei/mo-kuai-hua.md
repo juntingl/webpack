@@ -140,7 +140,7 @@ UMD模式通常会尝试提供当前最流行的脚本加载器（例如RequireJ
     * 都不支持，定义为全局变量
 
 
-``` UMD 代码
+```
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
         // AMD. Register as an anonymous module.
@@ -156,14 +156,12 @@ UMD模式通常会尝试提供当前最流行的脚本加载器（例如RequireJ
     }
 }(typeof self !== 'undefined' ? self : this, function (b) {
     // Use b in some fashion.
-
     // Just return a value to define the module export.
     // This example returns an object, but the module
     // can return a function as the exported value.
     return {};
 }));
 ```
-
 
 > [文档](https://github.com/umdjs/umd)
 
@@ -173,7 +171,7 @@ UMD模式通常会尝试提供当前最流行的脚本加载器（例如RequireJ
 * 一个文件一个模块
 * export / import 暴露接口/引入接口
 
-```ES6模块
+```
 # 引入 import
 import { stat, exists, readFile } from 'fs';
 import stat from './stat';
@@ -181,7 +179,6 @@ import stat from './stat';
 import stat as start from './stat';
 // 将mylib模块导出的方法全部引入到 mylib 中
 import  * as mylib from './mylib';
-
 
 
 # 导出 export
