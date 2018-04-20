@@ -51,7 +51,7 @@ $ nvm --version
 # 查看当前的 node 列表, 箭头指向的就是当前使用的版本
 $ nvm list
 
-# 安装 node 8代表的版本号
+# 安装 node 8代表的版本号 （node 版本最好安装 LTS版本）
 $ nvm install 8
 
 # 查看 node 是否安装成功
@@ -90,3 +90,21 @@ $ nrm use taobao
 
 > Note: 如果还想直到其他的命令， 都是命令后跟上 `-h` 就OK，eg: `node -h`、 `nrm -h`、`npm -h`... 屡试不爽 
 
+## Webpack 安装
+
+基础运行环境 `Node` 安装好后，来安装下正主`Webpack`.
+
+### 全局安装
+
+```
+$ npm install --global webpack
+```
+
+### 本地安装 (推荐)
+
+```
+$ npm install --save-dev webpack
+
+# 指定版本
+$ npm install --save-dev webpack@<version>
+```
