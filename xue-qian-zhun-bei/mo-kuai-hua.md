@@ -139,6 +139,7 @@ UMD模式通常会尝试提供当前最流行的脚本加载器（例如RequireJ
     * 判断是否支持 CommonJS
     * 都不支持，定义为全局变量
 
+
 ``` UMD 代码
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
@@ -162,6 +163,7 @@ UMD模式通常会尝试提供当前最流行的脚本加载器（例如RequireJ
     return {};
 }));
 ```
+
 
 > [文档](https://github.com/umdjs/umd)
 
