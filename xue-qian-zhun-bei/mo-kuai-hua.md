@@ -165,3 +165,52 @@ UMD模式通常会尝试提供当前最流行的脚本加载器（例如RequireJ
 
 > [文档](https://github.com/umdjs/umd)
 
+### ESM (ECMAScript Module)
+
+* ES6 提出
+* 一个文件一个模块
+* export / import 暴露接口/引入接口
+
+```ES6模块
+# 引入 import
+import { stat, exists, readFile } from 'fs';
+import stat from './stat';
+// 引入时重命名
+import stat as start from './stat';
+// 将mylib模块导出的方法全部引入到 mylib 中
+import  * as mylib from './mylib';
+
+
+
+# 导出 export
+var firstName = 'Michael';
+var lastName = 'Jackson';
+var year = 1958;
+
+export {firstName, lastName, year};
+
+export function multiply(x, y) {
+  return x * y;
+};
+
+// 写法一
+export var m = 1;
+
+// 写法二
+var m = 1;
+export {m};
+
+// 写法三
+var n = 1;
+export {n as m};
+
+export class myClass {}
+
+export default 123;
+
+export default funtion (x) {
+    return x * 2;
+};
+
+```
+
