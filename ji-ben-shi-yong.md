@@ -291,3 +291,128 @@ $ npm install @babel/plugin-transform-runtime --save-dev
 }
 
 ```
+
+## Webpack 中配置 TypeScript
+
+* Typescript 是 Js 的超集
+### Typescript loader
+
+**安装**
+
+```
+# 官方推荐
+$ npm install typescript ts-loader --save-dev (webpack4)
+$ npm install typescript ts-loader@3.5.0 --save-dev (webpack3)
+# 第三方
+$ npm install typescript awesome-typescript-loader --save-dev
+```
+**配置**
+
+* tsconfig.json
+* webpack.config.js
+
+**常用选项**
+
+* compilerOptions
+* include               
+* exclude
+
+[配置选项](https://www.tslang.cn/docs/handbook/tsconfig-json.html)
+
+**声明文件**
+
+通过安装声明文件，可以在使用引入类库、框架内容提供的API时可以清晰的知道传参的类型，如果传递了错误的参数，会很清晰快捷的反应给你传递参数的类型错误，出现错误，打包时就会立即报错
+
+```
+$ npm install @types/lodash
+$ npm install @types/vue
+$ npm install typing -g
+```
+
+每次手动的去安装引用类库的声明文件太麻烦，可以安装全局的 `typings`,使用 typing 命令，安装本地类型声明文件，然后配置下`tsconfig.json`文件生效
+
+```
+$ npm install typing -g
+$ typings install lodash    // 项目中生成一个typings 文件目录，里面就是类型声明文件
+```
+
+### 🌰
+
+1. 创建 `app.js`、`webpack.config.js` 和 `tsconfig.json` 入口文件、webpack配置文件 和 typescript 配置文件
+2. 需要安装的依赖
+    * webpack
+    * ts-loader / awesome-typescript-loader
+    * typescript
+    * lodash
+    * @types/lodash     // 声明文件, typings 本地安装了话，就不需要了
+
+**app.js**
+
+```
+import * as _ from 'lodash'
+
+const number = 45
+
+console.log(_.chunk([1, 2, 3, 4, 5], 3));
+
+interface Cat {
+    name: String,
+    sex: String
+}
+
+function touchCat (cat: Cat) {
+    console.info('喵~', cat.name);
+}
+
+touchCat({
+    name: '喵喵',
+    sex: 'male'
+})
+
+``` 
+
+**webpack.config.js**
+
+```
+module.exports = {
+    entry: {
+        'app': './app.ts'
+    },
+    output: {
+        filename: '[name].bundle.js'
+    },
+    module: {
+        rules: [
+            {
+                test: /\.tsx?$/,
+                use: {
+                    loader: "ts-loader"
+                }
+            }
+        ]
+    }
+}
+```
+
+**tsconfig.json**
+
+```
+{
+    "compilerOptions": {        // 通用配置
+        "module": "commonjs",
+        "target": "es5",
+        "allowJs": true,
+        // 安装本地 typing 时，添加的配置;默认所有可见的"@types"包会在编译过程中被包含进来, 添加以下代码生效
+        "typeRoots": [
+            "./node_modules/@type",
+            "./typings/modules"
+        ]
+    },
+    "include": [
+        "./src/*"
+    ],
+    "exclude": [
+        "./node_modules"
+    ]
+}
+```
