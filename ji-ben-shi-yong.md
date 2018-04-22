@@ -145,3 +145,149 @@ app.bundle.fbee5.js    6.78 kB       1  [emitted]  app
 ```
 这次打包你会发现，多出了一个`0.bundle.fbee5.js`文件，因为`AMD`的模块异步加载，所以会把引用的模块单独打一个 `chunk`
 
+
+## 编译 ES6/7
+
+对 ES6/7 进行编译，需要使用到 Babel; 在 Webpack 中是通过 Loader （babel-loader）来进行使用 Babel
+
+**学习**
+
+* Babel
+    * 编译工具
+* Babel-presets
+    * 设置 preset 就可以知道使用规范来打包
+    * 编译遵循规范集合汇总列表
+        * es2015
+        * es2016 
+        * babel-preset-stage 0 - 3
+* Babel-plugin
+
+### 🌰
+
+1. 创建 `app.js`、`webpack.config.js` 两个文件
+2. `app.js` 里面添加一些 ES6/7 新特性的代码
+3. 安装下相关依赖, 供 webpack 支持 babel 
+
+    ```
+     # 安装的是最新版本 
+     $ npm install @babel/core babel-loader @babel/preset-env --save-dev
+    ```
+
+4. `webpack.config.js` 配置下 `module`，将 `babel-loader` 加进来
+
+```
+# app.js
+
+let fn = () => {}
+
+const name = 'Junting'
+
+// 并不会被转换
+const arrMap = arr => arr.map(item => item * 2)
+
+let arr = arrMap([1, 2, 3, 4])
+
+console.log(arr)
+
+let isArr = arr.includes(8)
+
+let arrSet = new Set(arr)
+
+console.log(arrSet)
+
+function* generatorFn () {
+
+}
+
+# webpack.config.js
+
+module.exports = {
+    entry: {
+        app: './app.js'
+    },
+    output: {
+        filename: '[name].bundle.[hash:5].js'
+    },
+    module: {
+        rules: [
+            {
+                test: /\.js$/,      // 匹配规则
+                use: {              // 对匹配到的文件进行以下处理
+                    loader: 'babel-loader'
+                    options: {      
+                        presets: [  // 指定 loader 的打包编译的规范版本
+                            [   
+                                '@babel/preset-env',
+                                {
+                                    targets: {  // 指定目标对那些语法进行编译那些不编译； 还可以根据浏览器的支持程度来对那些语法进行编译
+                                        browsers: ['last 2 versions' ]
+                                    }
+                                }
+                            ]
+                        ]
+                    }
+                },
+                exclude: '/node_modules/'  // 排除规则之外的
+            }
+        ]
+    }
+}
+```
+
+对上面的实例进行打包，根据 打包的后生成的文件可以发现，箭头函数、Set 并没有被转换； `babel-preset`只是针对语法的转换，当是对以下的函数和方法并不支持：
+
+* Genetrator
+* Set
+* Map
+* Array.from
+* Array.prototype.includes
+
+需要借助 `babel polyfill`、`babel runtime transform` 两个插件来帮助转换
+
+**babel-polyfill**
+
+* 全局插件，填充器；先会全局对你使用的新特性方法，进行定义出来，然后方便的对新的API的使用
+* 会污染全局变量
+* 为开发应用准备
+
+```
+$ npm install babel-pilyfill --save-dev
+```
+
+使用很简单，直接在入口文件引用进来就行,`app.js`文件添加
+
+```
+import 'babel-polyfill'
+```
+
+**babel-plugin-transform-runtime**
+
+* 局部插件; 只会在使用新特性的方法进行转换，局部内进行转换，不影响全局
+* 为开发框架准备
+
+```
+$ npm install @babel/plugin-transform-runtime --save-dev
+```
+
+使用，需要在跟目录创建一个`.babelrc`文件，然后添加以下规则； `webpack.config.js` 里就不需要进行配置了
+
+
+```
+{
+    "presets": [
+        [
+            "@babel/preset-env",
+            {
+                "targets": {
+                    "browsers": ["last 2 versions"]
+                }
+            }
+        ]
+    ],
+    
+    "plugins": [
+        "@babel/transform-runtime"
+    ]
+}
+
+```
