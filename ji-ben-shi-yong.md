@@ -416,3 +416,157 @@ module.exports = {
     ]
 }
 ```
+
+## 提取公用代码
+
+模块化开发，就会有很多的公共模块，公共模块引用次数会很多，如果不提取出来，打包的时候就会反复多次打包公共模块代码，这就是为了提取公共代码的原因。
+### 配置
+
+使用插件 `CommonsChunkPlugin`; 原理就是A模块为公共模块，B、C 模块都引用了 A 模块，在打包的时候，发现 B 模块引用 A 模块，在 C 模块打包的时候也发现了 A 模块，就不会去 加载 A 模块了。
+
+```
+# webpack.optimize.CommonsChunkPlugin
+
+{
+    plugins: [
+        new webpack.optimize.CommonsChunkPlugin(options)
+    ]
+}
+```
+
+* options.name  or options.names  （chunk名称,提取 chunk 为公用代码）
+* options.filename                 (公用打包后的文件名) 
+* options.minChunks                (出现最小次数，就提取出来；还可以自定义提取逻辑函数)
+* options.chunks                   (指定提取公用代码范围)
+* options.children                 (是不是子模块下)
+* options.deepChildren             (还是所有模块查找共同依赖)
+* options.async                    (创建异步代码快)
+### 场景
+
+* 单页应用
+* 单页应用 + 第三方依赖
+* 多页应用 + 第三方依赖 + webpack 生成代码
+
+### 栗子
+
+1. 创建 `pageA.js`、`subPageA.js`、`subPaheB.js`、`moduleA.js` 文件
+2. 建立相互引用关系
+3. webpack配置文件
+
+```
+# pageA.js
+import './subPageA'
+import './subPageB'
+
+export default 'PageA'
+
+# subPageA.js
+import './pageA'
+import './moduleA'
+
+export default 'subPageA'
+
+# subPageB.js
+import './pageA'
+import './moduleA'
+
+export default 'subPageB'
+
+# moduleA.js
+export default 'moduleA'
+```
+
+**webpack.config.js**
+
+* "webpack": "^3.10.0" 依赖
+
+```
+var webpack = require('webpack');
+var path = require('path');
+
+module.exports = {
+    entry: {
+        'pageA': './src/pageA.js'
+    },
+    output: {
+        path: path.resolve(__dirname, './dist'),
+        filename: '[name].bundle.js',
+        chunkFilename: '[name].chunk.js'
+    },
+    plugins: [
+        new webpack.optimize.CommonsChunkPlugin({
+            name: 'common',
+            minChunks: 2
+        })
+    ]
+}
+```
+打包后，根据配置引用2次的模块提取为公共，结果你会发现并没有像你想象的这样，并没有提取。因为在 Webpack 中，针对代码提取是针对多个`entry`的，单个`entry` 公共的代码提取出来。针对单页面应用，很多实际开发过程中遇到**懒加载**，所以针对**懒加载**进行处理。
+
+**增加一个entry 入口文件**
+
+4. 创建 `pageB.js`、
+
+```
+# pageB.js
+import './subPageA'
+import './subPageB'
+
+export default 'subPageB'
+
+# webpack.config.js
+    entry: {
+        'pageA': './src/pageA.js',
+        'pageB': './src/pageB.js'
+    },
+
+```
+
+这个时候`common.bundle.js`的代码就多了`subPageA`、`subPageB` 和 `moduleA`。
+
+**引用类库进行提取到common**
+
+5. 引用 `lodash`库，将 webpack 生成的代码和引用第三方的代码打包到一起
+
+```
+var webpack = require('webpack');
+var path = require('path');
+
+module.exports = {
+    entry: {
+        'pageA': './src/pageA.js',
+        'pageB': './src/pageB.js',
+        'vender': ['lodash']            // 声明第三方依赖
+    },
+    output: {
+        path: path.resolve(__dirname, './dist'),
+        filename: '[name].bundle.js',
+        chunkFilename: '[name].chunk.js'
+    },
+    plugins: [
+        new webpack.optimize.CommonsChunkPlugin({
+            name: 'vender',         // 指定 chunk 名，webpack 和 第三方打包到一起
+            minChunks: Infinity     // 不需要再去其他模块里找了
+        })
+    ]
+}
+```
+
+6. 不想混合在一起，第三方依赖单独打包一个chunk，webpack生成提取的公共模块也独立分开
+
+再次 `new` 一个新的实例就好。
+
+```
+    plugins: [
+        new webpack.optimize.CommonsChunkPlugin({
+            name: 'vender',         // 指定 chunk 名，webpack 和 第三方打包到一起
+            minChunks: Infinity     // 不需要再去其他模块里找了
+        }),
+
+        new webpack.optimize.CommonsChunkPlugin({
+            name: 'common',        
+            minChunks: 2,
+            chunks: ['pageA', 'pageB']      // 需要指定下提取公共模块的范围
+        })
+    ]
+```
