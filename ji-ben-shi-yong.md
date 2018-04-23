@@ -564,7 +564,8 @@ module.exports = {
         }),
 
         new webpack.optimize.CommonsChunkPlugin({
-            name: 'common',        
+            name: 'common',
+            async: 'async-common',   // 异步加载       
             minChunks: 2,
             chunks: ['pageA', 'pageB']      // 需要指定下提取公共模块的范围
         })
@@ -572,3 +573,84 @@ module.exports = {
 ```
 
 [文档](https://doc.webpack-china.org/plugins/commons-chunk-plugin/)
+
+## 代码分割 和 懒加载
+
+**实现两种方式：**
+
+* webpack methods
+    * require.ensure; 
+        * 参数： []:dependencies 、callback、 errorCallback、chunkName
+        * 需要在 callback 里再次require一次，不然只是把代码打包了进来，但并没有执行(实际引入)
+    * require.include
+* ES 2015 Loader spec （动态import）
+    * System.import() -> import()
+    * import() -> Promise
+    * import().then()
+    * 魔法注释 指定了 webpackchunkName，`Chunk Names`才会生成
+
+```webpack3
+import(
+    /* webpackChunkName: async-chunk-name */
+    /* webpackMode: lazy */
+    modulename
+)
+```
+
+### 场景
+
+* 分离业务代码 和 第三方依赖
+* 分离业务代码 和 业务公共代码 和 第三方依赖
+* 分离首次加载 和 访问后加载的代码
+
+使用上个栗子代码来进行实现,`plugins`去除、`entrys`改成单个文件入口
+
+```
+# webpack.config.js
+module.exports = {
+    entry: {
+        'pageA': './src/pageA.js'
+    },
+    output: {
+        path: path.resolve(__dirname, './dist'),
+        filename: '[name].bundle.js',
+        chunkFilename: '[name].chunk.js'
+    }
+}
+
+# pageA.js
+// 提前引入，这样 subPageA、subPageB 就不会加载 moduleA 的代码了
+require.include('./moduleA')
+
+var page = 'subPageA';
+
+if (page == 'subPageA') {
+   require.ensure('./subPageA', function () {
+        var subPageA = require('./subPageA');
+   }, 'subPageA')
+} else {
+    require.ensure('./subPageB', function () {
+        var subPageB = require('./subPageB');
+   }, 'subPageB')
+}
+
+// require.ensure(['subPageA', 'subPageB'], function () {
+//     var subPageA = require('./subPageA');
+//     var subPageb = require('./subPageB');
+// })
+
+// import './subPageB'
+
+// import * as _ from 'lodash'
+require.ensure(['lodash'], function () {
+    var _ = require('lodash');
+    _.join(['1', '2', '3'], '4')
+}, 'vendor')
+
+export default 'PageA'
+
+```
+
+**页面是如何加载这些文件呢**
+
+html 页面里 直接引入 entrys 入口文件就好`pageA.bundle.js`
