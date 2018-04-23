@@ -574,7 +574,7 @@ module.exports = {
 
 [文档](https://doc.webpack-china.org/plugins/commons-chunk-plugin/)
 
-## 代码分割 和 懒加载
+## 代码分割(Code Splitting) 和 懒加载
 
 **实现两种方式：**
 
