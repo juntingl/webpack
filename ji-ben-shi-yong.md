@@ -570,3 +570,5 @@ module.exports = {
         })
     ]
 ```
+
+[文档](https://doc.webpack-china.org/plugins/commons-chunk-plugin/)
