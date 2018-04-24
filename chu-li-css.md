@@ -401,3 +401,89 @@ import(/*
 })
 
 ```
+
+## PostCSS in Webpack
+
+**PostCSS相关流行插件了解**
+
+* AutopreFixer
+* CSS-nano
+* CSS-next
+
+**PostCSS 是什么？**
+
+A tool for transforming CSS with JavaScript.
+PostCSS是一个用 JavaScript 工具和插件转换 CSS 代码的工具。
+
+**webpack中如何使用安装**
+
+* postcss
+* postcss-loader    
+* Autoprefixer      （自动生成各个浏览器的前缀）
+* postcss-cssnano   （优化CSS, css-loader 的 minimize为true也是使用css-nano的压缩）
+* postcss-cssnext    (支持新语法，例如： CSS Variables、custom selectors(自定义选择器)、calc() 动态计算)
+
+**postcss 其他的插件**
+* postcss-import
+* postcss-url
+* postcss-assets
+
+> 注意：postcss-loader 必须在 css-loader后面，预编译 less/sass-loader前面
+
+```
+# 安装各项依赖
+$ npm install postcss postcss-loader postcss-cssnext postcss-cssnano autoprefixer --save-dev
+
+# 添加 postcss loader，webpack.config.js
+
+use: [
+    {
+        loader: 'css-loader',
+        options: {
+            // minimize: true,
+            module: true,
+            localIdentName: '[path][name]_[local][hash:base64:5]'
+        }
+    },
+    {
+        loader: 'postcss-loader',
+        options: {
+            ident: 'postcss',
+            plugins: [
+                // require('autoprefixer')(),   // 前缀
+                require('postcss-cssnext')(),   // 里面包含了主动加前缀的功能就不需要上面的插件了， cssnext 可以使用新语法
+            ]
+        }
+    },
+    {
+        loader: 'less-loader'
+    }
+]
+
+# common.less 新语法变量
+:root {
+    --mainColor: red;
+}
+
+a {
+    color: var(--mainColor)
+}
+```
+
+**Broswerslist**
+
+兼容各种浏览器
+
+* 所有创建都共用一份配置
+    * package.json; 在package.json添加配置，插件都会在此文件里找
+    * .browserslistrc; 根目录下创建配置文件
+
+```
+# package.json
+
+"browserslist": [
+    ">= 1%",
+    "last 2 versions"
+  ]
+}
+```
