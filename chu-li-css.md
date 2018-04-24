@@ -147,7 +147,7 @@ rules: [
     }
 ]
 ```
-### style-loader 的配置
+### style-loader 的options配置
 
 * inserAt (style标签插入位置)
 * insertInfo (插入到dom)
@@ -207,3 +207,60 @@ module.exports = {
     }
 }
 ```
+
+### css-loader 的options配置
+
+* alias (解析的别名)
+* importLoader (@import)
+* Minimize (是否压缩)
+* module (启用css-modules)
+
+**CSS-Modules模块化的一些知识点**
+
+* :local    (局部样式)
+* :global   （全局样式） 
+* composes  （继承一段样式）
+* composes ... from path (引入一段样式)
+* localIdentName: '[path][name]_[local]--[hash:base64:5]' （定义编译后 class 名称格式）
+    * path 引用 css 路径
+    * name 当前 import 的 css 名称
+    * local 本地的样式 class 的名称
+    * hash 加盐 防止有重复
+
+> 注意： 使用 composes 必须在其他规则之前，开头第一行使用。不然就会影响css 文件的加载顺序。
+
+
+**继续使用上面简单的🌰**
+
+```
+# webpack.config.js 修改后
+
+module: {
+    rules: [
+        {
+            test: /\.css$/,
+            use: [
+                {
+                    loader: 'style-loader',
+                    options: {
+                        // insertInto: '#app', 注释，因为后面对 app 样式覆盖
+                        singleton: true,
+                        transform: './src/css.transform.js'
+                    }
+                },
+                {
+                    loader: 'css-loader',
+                    options: {
+                        // minimize: true,  // 压缩
+                        module: true,       // 启用 css-modules
+                        localIdentName: '[path][name]_[local][hash:base64:5]'  // 根据文件路径+文件名_+本地样式名+一串加盐生成的类名，更清晰直观
+                    }
+                }
+            ]
+        }
+    ]
+}
+```
+
+## 配置 Less / Sass
+
