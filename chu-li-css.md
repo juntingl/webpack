@@ -487,3 +487,275 @@ a {
   ]
 }
 ```
+
+
+## Tree Shaking
+
+webpack 2.0 加的功能，`Tree Shaking` 意思就是摇树，然后树上的枯叶就会掉下来；那在项目其实也是一个道理，项目中有些代码从来没有用到，还会耽误加载资源的时间，所以 Tree Shaking 很有必要。
+
+**分两种：**
+
+* Js Tree Shaking
+* CSS Tree Shaking
+
+**场景**
+
+* 常规优化
+* 引入第三方库的某一个功能
+
+### JS Tree Shaking
+
+2版本以后，webpack 已经在打包过程中，会把没有用到的代码标示出来，通过 webpack 提供的插件（`Webpack.otpimize.UglifyJsPlugin`）把废弃代码给移除。
+
+#### 如何标示呢？
+
+打包后，每个代码块开始的地方会已注释的方式进行标示，看下面代码：
+
+```
+# 使用到的
+/* harmony export (immutable) */ __webpack_exports__["a"] = a;
+# 未使用
+/* unused harmony export b */
+/* unused harmony export c */
+```
+
+**安装相关依赖**
+
+```
+$ npm install webpack@3.10.0 style-loader css-loader less-loader less extract-text-webpack-plugin --save-dev
+```
+
+**先生成下目录结构：**
+
+```
+.
+├── dist
+│   ├── app.bundle.js
+│   └── app.min.css
+├── index.html
+├── package-lock.json
+├── package.json
+├── src
+│   ├── app.js
+│   ├── components
+│   │   └── utils.js
+│   └── css
+│       └── base.less
+└── webpack.config.js
+```
+
+**webpack.config.js**
+
+只有一些css的基本配置，单独提取 css 为一个文件
+
+```
+var path = require('path');
+var ExtractTextWebpackPlugin = require('extract-text-webpack-plugin');
+
+module.exports = {
+    entry: {
+        "app": './src/app.js'
+    },
+    output: {
+        path: path.resolve(__dirname, 'dist'),
+        publicPath: './dist/',
+        filename: '[name].bundle.js',
+        chunkFilename: '[name].chunk.js'
+    },
+    module: {
+        rules: [
+            {
+                test: /\.less$/,
+                use: ExtractTextWebpackPlugin.extract({
+                    fallback: {
+                        loader: 'style-loader',
+                        options: { singleton: true }
+                    },
+                    use: [
+                        {
+                            loader: 'css-loader'
+                        },
+                        {
+                            loader: 'less-loader'
+                        }
+                    ]
+                })
+            }
+        ]
+    },
+    plugins: [
+        new ExtractTextWebpackPlugin({
+            filename: '[name].min.css',
+            allChunks: false   // 指定范围
+        })
+    ]
+}
+```
+
+**app.js**
+
+```
+import base from './css/base.less';
+import { a } from './components/utils';
+
+var app = document.getElementById('app');
+app.innerHTML = `<div class="${base.box}"></div>`;
+
+console.log(a());
+```
+
+**utils.js**
+
+```
+export function a () {
+    return 'this is a';
+}
+export function b () {
+    return 'this is b';
+}
+export function c () {
+    return 'this is c';
+}
+```
+
+**base.less**
+
+```
+@homecolor: #ff3333;
+
+html {
+    background: @homecolor,
+}
+
+.box {
+    width: 300px;
+    height: 300px;
+    border-radius: 4px;
+    background: #333;
+}
+```
+
+**index.html**
+
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Tree Shaking</title>
+</head>
+<body>
+    <div id="app"></div>
+<script src="./dist/app.bundle.js"></script>
+</body>
+</html>
+```
+
+**打包生成后的文件**
+
+```
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = a;
+/* unused harmony export b */
+/* unused harmony export c */
+function a () {
+    return 'this is a';
+}
+function b () {
+    return 'this is b';
+}
+function c () {
+    return 'this is c';
+}
+
+/***/ })
+/******/ ]);
+```
+
+**使用webpack自带的插件进行 tree shaking**
+
+```
+var path = require('path');
+var Webpack = require('webpack');
+var ExtractTextWebpackPlugin = require('extract-text-webpack-plugin');
+
+module.exports = {
+    entry: {
+        "app": './src/app.js'
+    },
+    output: {
+        path: path.resolve(__dirname, 'dist'),
+        publicPath: './dist/',
+        filename: '[name].bundle.js',
+        chunkFilename: '[name].chunk.js'
+    },
+    module: {
+        rules: [
+            {
+                test: /\.less$/,
+                use: ExtractTextWebpackPlugin.extract({
+                    fallback: {
+                        loader: 'style-loader',
+                        options: { singleton: true }
+                    },
+                    use: [
+                        {
+                            loader: 'css-loader'
+                        },
+                        {
+                            loader: 'less-loader'
+                        }
+                    ]
+                })
+            }
+        ]
+    },
+    plugins: [
+        new ExtractTextWebpackPlugin({
+            filename: '[name].min.css',
+            allChunks: false   // 指定范围
+        }),
+        // JS tree shaking --- 使用这一句就好
+        new Webpack.optimize.UglifyJsPlugin()
+    ]
+}
+```
+
+**引用第三方库 lodash，进行 tree shaking**
+
+* lodash        not-working
+* lodash-es     not-working
+* babel-plugin-lodash   woking
+
+```
+# app.js 增加两句，前提 你先安装好依赖
+import { chunk } from 'lodash-es';
+
+console.log(chunk([1,2,3,4,5,6,7], 2));
+```
+
+然后进行打包后，你会发现文件还是这么大，查看 lodash 源码，因为本身 lodash 就不是模块化的导出方法的所以打包还是这么大, 所以有第三方库本身的原因让 webpack 很难做到 Tree Shaking。
+
+那这么办呢，针对 `lodash`，我们这里可以使用 `babel-plugin-lodash` 来进行解决，`babel-loader`的相关依赖务必安装好，我们来配置下规则，针对 js 文件使用 babel 进行编译
+
+```
+# webpack.config.js
+
+{
+    test: /\.js$/,
+    use: [
+        {
+            loader: 'babel-loader',
+            options: {
+                presets: ['env'],
+                plugins: ['lodash']
+            }
+        }
+    ]
+}
+```
