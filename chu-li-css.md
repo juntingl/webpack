@@ -759,3 +759,81 @@ console.log(chunk([1,2,3,4,5,6,7], 2));
     ]
 }
 ```
+### CSS Tree Shaking
+
+**使用工具**
+
+* [Purify CSS](https://github.com/purifycss/purifycss)
+* purifycss-webpack （最新的）
+
+> 注意： CSS Tree Shaking 不能和 CSS Module 一块使用，需要一起使用，需要通过一些配置，设置白名单来实现。
+
+**options**
+
+* paths: glob.sync([]) 路径（glob.sync([]) 同时加载更多的工具）
+    * glob.sync([]) （`npm install glob-all --save-dev`)
+
+
+**通过上面的例子来实现下 `CSS Tree Shaking`**
+
+
+```
+# 安装依赖
+$ npm install purifycss-webpack purify-css glob-all --save-dev
+
+# webpack.config.js
+// 引入插件
+var PurifyCSS = require('purifycss-webpack');
+var glob = require('glob-all');
+
+// plugins 配置
+plugins: [
+        new ExtractTextWebpackPlugin({
+            filename: '[name].min.css',
+            allChunks: false   // 指定范围
+        }),
+        // PurifyCSS可以配合ExtractTextWebpackPlugin 一起使用的
+        // 前提需要放在 ExtractTextWebpackPlugin 后面
+        new PurifyCSS({
+            paths: glob.sync([
+                path.join(__dirname, './*.html'),
+                path.join(__dirname, './src/*.js')
+            ])
+        }),
+        // JS tree shaking 
+        new Webpack.optimize.UglifyJsPlugin()
+    ]
+
+# base.less
+@homecolor: #ff3333;
+
+html {
+    background: @homecolor,
+}
+
+.box {
+    width: 300px;
+    height: 300px;
+    border-radius: 4px;
+    background: #333;
+}
+
+// 新增三个没有用到的样式
+.bigBox {
+    width: 400px;
+    height: 500px;
+    border: 5px;
+}
+
+.smallBox {
+    width: 400px;
+    height: 500px;
+    border: 5px;
+}
+
+.littleBox {
+    width: 400px;
+    height: 500px;
+    border: 5px;
+}
+```
