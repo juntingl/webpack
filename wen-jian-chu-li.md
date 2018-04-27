@@ -82,6 +82,7 @@ module: {
                 {
                     loader: 'url-loader',
                     options: {
+                        name: '[name]-[hash:5].[ext]',
                         limit: 100000,  // 文件大小限制
                         publicPath: './assets/imgs/',
                         useRelativePath: true
@@ -100,5 +101,84 @@ module: {
         }
     ]
 },
+
+```
+
+## 字体文件处理
+
+处理方式和图片处理的方式一样
+
+```js
+ {
+    test: /\.(et0|woff2?|ttf|svg)$/
+    use: [
+        {
+            loader: 'url-loader'    // file-loader,
+            options: {
+                name: '[name]-[hash:5].[ext]',
+                limit: 5000,
+                publicPath: '',
+                ouputPath: 'dist',
+                useRelativePath: true
+            }
+        }
+    ]
+ }
+```
+
+## 处理第三方库
+
+### 场景
+
+* 第三方库在远程的 CDN 上
+* 下载了第三方库，引用文件的形式
+
+### webpack 怎么处理
+
+* 插件 webpack.providePlugin 自动加载模块，而不必到处 import 或 require 。
+* imports-loader
+* window
+
+```js
+$ npm i jquery -S
+# webpack.config.js npm 管理
+
+plugins: [
+    new webpack.ProvidePlugin({
+        $ : 'jquery',
+    })
+]
+
+# 不是通过 NPM 管理的依赖, 需要配置 解析处理文件
+
+resolve: {
+    alias: {
+        jquery$: path.resolve(__dirname, 'src/lib/jquery.min.js')
+    }
+},
+plugins: [
+    new webpack.ProvidePlugin({
+        $ : 'jquery',
+    })
+]
+
+# imports-loader
+
+rules: [
+    {
+        test: path.resolve(__dirname, 'src/app.js')
+        use: {
+            loader: 'imports-loader',
+            options: {
+                $ : 'jquery'
+            }
+        }
+    }
+],
+resolve: {
+    alias: {
+        jquery$: path.resolve(__dirname, 'src/lib/jquery.min.js')
+    }
+}
 
 ```
