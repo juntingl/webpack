@@ -182,3 +182,80 @@ resolve: {
 }
 
 ```
+
+## HTML in Webpack
+
+* 自动生成HTML （`HtmlWebpackPlugin`）
+* 场景优化
+
+### HtmlWebpackPlugin 配置
+
+* template   指定模版
+* filename   指定文件名
+* minify     是否压缩
+* chunks     指定那个生成此模版的 chunk
+* inject     是不是让插件帮你把想要的文件插入到Html页面中
+
+```js
+var HtmlWebpackPlugin = require('HtmlWebpackPlugin');
+
+plugins: [
+    new HtmlWebpackPlugin ({
+        filename: 'index.bundle.html',
+        template: './index.html',
+        chunks: ['app'],
+        minify: {
+        }
+    })
+]
+```
+
+[插件文档](https://github.com/jantimon/html-webpack-plugin#configuration)
+
+
+### 生成的HTML中引入图片
+
+使用 `html-loader` 插件进行处理
+
+```js
+rules: [
+    {
+        test: /\.html$/,
+        use: {
+            loader: 'html-loader',
+            options: {
+                attrs: ['img:src'， 'img:data-src'] // 默认配置
+            }
+        }
+    }
+]
+```
+
+### 配合优化
+
+通过提取公共代码，每个页面加载公共代码，就会是一个请求，所以我们在首页提前载入代码直接嵌入滴代码，从而减少请求。
+
+提前载入 webpack 加载代码:
+
+* inline-manifest-webpack-plugin     (专门将webpack生成的代码载入页面，和html-loader 配合又写bug)
+* html-webpack-inline-chunk-plugin （推荐）
+
+```js
+var htmlWebpackInlineChunk = require('html-webpack-inline-chunk-plugin');
+
+plugins: [
+    // 提取公共代码
+    new webpack.optimize.CommonChunkPlugin({
+        name: 'manifest'
+    }),
+    new htmlWebpackInlineChunk ({
+        inlineChunk: ['manifest']
+    }),
+    new HtmlWebpackPlugin ({
+        filename: 'index.bundle.html',
+        template: './index.html',
+        minify: {
+        }
+    })
+]
+```
